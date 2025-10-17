@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <style>
+      /* Reset básico para evitar scroll desnecessário */
+      html, body {
+        margin: 0;
+        padding: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        height: 100%;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: 'Segoe UI', sans-serif;
+        background: radial-gradient(circle, #4b0082 0%, #1a001a 80%, #000000 100%);
+        color: #ddd;
+        padding: 20px 40px;
+        min-height: calc(100vh - 40px);
+        text-align: center;
+      }
+
+      h1 {
+        color: #e0aaff;
+        font-size: 2.5em;
+        margin-bottom: 30px;
+        text-shadow: 1px 1px 5px #330066;
+      }
+
+      table {
+        width: 95%;
+        max-width: 1100px;
+        margin: auto;
+        border-collapse: collapse;
+        background: rgba(30, 0, 50, 0.7);
+        border-radius: 12px;
+        box-shadow: 0 0 15px rgba(120, 50, 180, 0.4);
+        overflow: hidden;
+      }
+
+      th, td {
+        padding: 12px 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        text-align: center;
+        color: #ddd;
+      }
+
+      th.assessor, td.assessor {
+        text-align: left !important;
+      }
+
+      th {
+        background-color: rgba(80, 40, 120, 0.8);
+        font-weight: 600;
+        color: #f3e6ff;
+      }
+
+      tr:nth-child(even) {
+        background-color: rgba(70, 20, 110, 0.5);
+      }
+
+      tr:nth-child(odd) {
+        background-color: rgba(50, 10, 80, 0.5);
+      }
+
+      tr:hover {
+        background-color: rgba(130, 60, 180, 0.8);
+        color: #fff;
+      }
+
+      .top1 {
+        background-color: #b27fff !important;
+        color: #1a0033;
+        font-weight: bold;
+      }
+
+      .top2 {
+        background-color: #9a6fff !important;
+        color: #1a0033;
+        font-weight: bold;
+      }
+
+      .top3 {
+        background-color: #815fff !important;
+        color: #1a0033;
+        font-weight: bold;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🏆 Ranking AAI - Score</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>Posição</th>
+          <th>Código AAI</th>
+          <th class="assessor">Assessor</th>
+          <th>Cluster</th>
+          <th>Score</th>
+          <th>Nível</th>
+        </tr>
+      </thead>
+      <tbody id="ranking-body">
+        <tr><td colspan="6">Carregando...</td></tr>
+      </tbody>
+    </table>
+
+    <script>
+      function atualizarRanking() {
+        google.script.run.withSuccessHandler(function(data) {
+          const tbody = document.getElementById("ranking-body");
+          tbody.innerHTML = "";
+
+          const dados = data.slice(1); // Ignora o cabeçalho da planilha
+
+          if (!dados || dados.length === 0) {
+            tbody.innerHTML = "<tr><td colspan='6'>Nenhum dado encontrado.</td></tr>";
+            return;
+          }
+
+          dados.forEach((row, index) => {
+            const tr = document.createElement("tr");
+
+            if (index === 0) tr.classList.add("top1");
+            else if (index === 1) tr.classList.add("top2");
+            else if (index === 2) tr.classList.add("top3");
+
+            let rawScore = row[4];
+            let cleanedScore = '';
+
+            if (typeof rawScore === 'number') {
+              cleanedScore = Math.round(rawScore).toString();
+            } else {
+              cleanedScore = String(rawScore).replace(/[.,]/g, '');
+            }
+
+            tr.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${row[1]}</td>
+              <td class="assessor">${row[2]}</td>
+              <td>${row[3]}</td>
+              <td>${cleanedScore}</td>
+              <td>${row[5]}</td>
+            `;
+
+            tbody.appendChild(tr);
+          });
+        }).getRankingData();
+      }
+
+      atualizarRanking();
+      setInterval(atualizarRanking, 60000);
+    </script>
+  </body>
+</html>
